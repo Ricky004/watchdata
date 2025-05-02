@@ -20,8 +20,8 @@ To install and run **WatchData**, follow the steps below:
 
 1. Clone this repository:
     ```bash
-    git clone https://github.com/your-username/WatchData.git
-    cd WatchData
+    git clone https://github.com/Ricky004/watchdata.git
+    cd watchdata
     ```
 
 2. Install dependencies (ensure you have Go 1.18+):
