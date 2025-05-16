@@ -1,0 +1,17 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+      grpc:
+
+exporters:
+  otlphttp:
+    endpoint: http://localhost:8080/v1/logs  # WatchData backend log endpoint
+    tls:
+      insecure: true  # Set to false in production if using HTTPS 
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp]
