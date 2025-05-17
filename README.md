@@ -1,6 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="150" alt="WatchData logo"
-   style="border: 3px solid #ccc; border-radius: 15%; padding: 5px;">
+  <img src="assets/logo.png" width="150" alt="WatchData logo">
 </p>
 
 <h1 align="center">WatchData</h1>
