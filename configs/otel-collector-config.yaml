@@ -2,16 +2,18 @@ receivers:
   otlp:
     protocols:
       http:
-      grpc:
+        endpoint: 0.0.0.0:4319  
 
 exporters:
   otlphttp:
-    endpoint: http://localhost:8080/v1/logs  # WatchData backend log endpoint
+    endpoint: "http://host.docker.internal:4320"  # Your backend OTLP HTTP endpoint
     tls:
-      insecure: true  # Set to false in production if using HTTPS 
+      insecure: true  # Use false if your backend supports TLS
+
+  debug:
 
 service:
   pipelines:
     logs:
       receivers: [otlp]
-      exporters: [otlphttp]
+      exporters: [debug, otlphttp]
