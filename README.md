@@ -1,4 +1,9 @@
-# WatchData
+<p align="center">
+  <img src="assets/logo.png" width="150" alt="WatchData logo"
+   style="border: 3px solid #ccc; border-radius: 15%; padding: 5px;">
+</p>
+
+<h1 align="center">WatchData</h1>
 
 **WatchData** is an open-source observability application that helps developers collect, store, and explore logs, metrics, and traces from their systems. Built using OpenTelemetry standards, it is designed to provide a lightweight and cost-effective solution for monitoring and debugging.
 
