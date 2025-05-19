@@ -1,4 +1,4 @@
-package watchdataexporter
+package otelexporter
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 const typeStr string = "watchdata"
 
-func NewFactory() component.Factory {
+func NewFactory() exporter.Factory {
 	typ, err := component.NewType(typeStr)
 	if err != nil {
 		fmt.Println("Type is invalid", err)

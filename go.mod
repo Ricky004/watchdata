@@ -2,6 +2,8 @@ module github.com/Ricky004/watchdata
 
 go 1.24.2
 
+replace github.com/Ricky004/watchdata/internals/otelexporter => ./internals/otelexporter
+
 require (
 	go.opentelemetry.io/collector/component v1.32.0
 	go.opentelemetry.io/collector/consumer v1.32.0

@@ -1,4 +1,4 @@
-package watchdataexporter
+package otelexporter
 
 import (
 	"go.opentelemetry.io/collector/component"
