@@ -13,10 +13,11 @@ otelcol:
   version: latest
 
 components:
+  receivers:
+    - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v1.32.0 
+      name: otlp
   exporters:
     - gomod: github.com/Ricky004/watchdata/internals/otelexporter v0.1.0
       name: watchdata
-  receivers:
-    - gomod: go.opentelemetry.io/collector/receiver/otlp v1.32.0 # Added gomod for otlp
-      name: otlp
+  
 

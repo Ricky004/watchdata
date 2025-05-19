@@ -11,10 +11,8 @@ exporters:
     endpoint: "http://host.docker.internal:4320"  # Your backend OTLP HTTP endpoint
     api_key: 
 
-  debug:
-
 service:
   pipelines:
     logs:
       receivers: [otlp]
-      exporters: [debug, watchdata]
+      exporters: [watchdata]

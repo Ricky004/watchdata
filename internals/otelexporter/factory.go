@@ -1,7 +1,6 @@
 package otelexporter
 
 import (
-	"fmt"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
@@ -10,10 +9,7 @@ import (
 const typeStr string = "watchdata"
 
 func NewFactory() exporter.Factory {
-	typ, err := component.NewType(typeStr)
-	if err != nil {
-		fmt.Println("Type is invalid", err)
-	}
+	typ := component.MustNewType(typeStr)
 	return exporter.NewFactory(
 		typ,
 		CreateDefaultConfig,
@@ -22,7 +18,7 @@ func NewFactory() exporter.Factory {
 }
 
 func CreateDefaultConfig() component.Config {
-	typ, _ := component.NewType(typeStr)
+	typ := component.MustNewType(typeStr)
 	return &Config{
 		ID:       component.NewID(typ),
 		Endpoint: "http://host.docker.internal:4320",
