@@ -6,7 +6,7 @@ receivers:
 
 exporters:
   watchdataexporter:
-    endpoint: 0.0.0.0:14317  # Your backend OTLP HTTP endpoint
+    endpoint: host.docker.internal:14317  # Your backend OTLP HTTP endpoint
     insecure: true
 
 service:

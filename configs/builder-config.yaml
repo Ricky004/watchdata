@@ -12,4 +12,6 @@ receivers:
 
 exporters:
   - gomod: 
-      github.com/Ricky004/watchdata/pkg/watchdataexporter v0.0.1
+      github.com/Ricky004/watchdata v0.0.1
+    import: 
+      github.com/Ricky004/watchdata/pkg/watchdataexporter
