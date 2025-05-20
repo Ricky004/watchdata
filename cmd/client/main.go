@@ -30,7 +30,7 @@ func main() {
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
 		SeverityText:   "INFO",
-		Body:           &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "Hello from OTLP!"}},
+		Body:           &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "Hello from WatchData (tridip)!"}},
 		Attributes:     []*commonpb.KeyValue{{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}}},
 		TraceId:        []byte("0123456789abcdef"),
 		SpanId:         []byte("01234567"),

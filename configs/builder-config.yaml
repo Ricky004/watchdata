@@ -1,21 +1,15 @@
 # builder-config.yaml
 
-build:
-  platforms:
-    - linux/amd64
-
 dist:
-  name: watchdata-collector
+  name: watchdataexporter
   description: "Custom Collector with watchdata exporter"
   output_path: ./dist
 
-otelcol:
-  version: latest
 
-components:
-  receivers:
-    - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver latest
-      name: otlp
-  exporters:
-     - gomod: github.com/Ricky004/watchdata/pkg/watchdataexporter latest
-       name: watchdataexporter
+receivers:
+  - gomod: 
+      go.opentelemetry.io/collector/receiver/otlpreceiver v0.126.0
+
+exporters:
+  - gomod: 
+      github.com/Ricky004/watchdata/pkg/watchdataexporter v0.0.1

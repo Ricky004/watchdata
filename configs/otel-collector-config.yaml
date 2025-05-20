@@ -7,7 +7,7 @@ receivers:
 exporters:
   watchdataexporter:
     endpoint: 0.0.0.0:14317  # Your backend OTLP HTTP endpoint
-    api_key: ""
+    insecure: true
 
 service:
   pipelines:
