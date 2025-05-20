@@ -19,7 +19,7 @@ func NewFactory() exporter.Factory {
 
 func CreateDefaultConfig() component.Config {
 	return &Config{
-		Endpoint: "http://host.docker.internal:4320",
+		Endpoint: "0.0.0.0:14317",
 		APIKey:   "",
 	}
 }

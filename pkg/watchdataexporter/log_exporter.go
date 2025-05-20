@@ -3,7 +3,6 @@ package watchdataexporter
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
@@ -14,11 +13,10 @@ import (
 
 type watchdataExporter struct {
 	endpoint string
-	apiKey string
-	logger *zap.Logger
-	httpClient *http.Client
-	host   component.Host
-	cancel context.CancelFunc
+	apiKey   string
+	logger   *zap.Logger
+	host     component.Host
+	cancel   context.CancelFunc
 }
 
 func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, error) {
@@ -28,16 +26,15 @@ func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, er
 
 	return &watchdataExporter{
 		endpoint: cfg.Endpoint,
-		apiKey: cfg.APIKey,
-		logger: set.Logger,
-		httpClient: &http.Client{},
+		apiKey:   cfg.APIKey,
+		logger:   set.Logger,
 	}, nil
 }
 
 // createLogsExporter is the factory function for the logs exporter.
 func createLogsExporter(
 	_ context.Context,
-    set exporter.Settings,
+	set exporter.Settings,
 	cfg component.Config,
 ) (exporter.Logs, error) {
 	conf, ok := cfg.(*Config)
@@ -77,7 +74,7 @@ func (e *watchdataExporter) Capabilities() consumer.Capabilities {
 
 // ConsumeLogs is the method that receives log data.
 func (e *watchdataExporter) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
-	return e.sendLogsOverHTTP(ctx, "/logs", ld)
+	return e.sendLogsOverGRPC(ctx, ld)
 }
 
 // Compile-time check to ensure watchdataExporter implements exporter.Logs.
