@@ -1,4 +1,4 @@
-package otelexporter
+package watchdataexporter
 
 import (
 	"context"
@@ -17,6 +17,8 @@ type watchdataExporter struct {
 	apiKey string
 	logger *zap.Logger
 	httpClient *http.Client
+	host   component.Host
+	cancel context.CancelFunc
 }
 
 func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, error) {
@@ -53,12 +55,17 @@ func createLogsExporter(
 
 // Start is a lifecycle function for the exporter.
 func (e *watchdataExporter) Start(ctx context.Context, host component.Host) error {
+	e.host = host
+	_, e.cancel = context.WithCancel(ctx)
 	e.logger.Info("Starting watchdataExporter", zap.String("endpoint", e.endpoint))
 	return nil
 }
 
 // Shutdown is a lifecycle function for the exporter.
 func (e *watchdataExporter) Shutdown(ctx context.Context) error {
+	if e.cancel != nil {
+		e.cancel()
+	}
 	e.logger.Info("Stopping watchdataExporter")
 	return nil
 }

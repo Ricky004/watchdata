@@ -1,4 +1,4 @@
-package otelexporter
+package watchdataexporter
 
 import (
 	"bytes"

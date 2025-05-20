@@ -7,7 +7,7 @@ receivers:
         endpoint: 0.0.0.0:4319  # client send their logs in this port
 
 exporters:
-  watchdata:
+  watchdataexporter:
     endpoint: "http://host.docker.internal:4320"  # Your backend OTLP HTTP endpoint
     api_key: 
 
@@ -15,4 +15,4 @@ service:
   pipelines:
     logs:
       receivers: [otlp]
-      exporters: [watchdata]
+      exporters: [watchdataexporter]

@@ -1,26 +1,24 @@
-package otelexporter
+package watchdataexporter
 
 import (
-
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
 )
 
-const typeStr string = "watchdata"
+var (
+	typStr = component.MustNewType("watchdataexporter")
+)
 
 func NewFactory() exporter.Factory {
-	typ := component.MustNewType(typeStr)
 	return exporter.NewFactory(
-		typ,
+		typStr,
 		CreateDefaultConfig,
-		exporter.WithLogs(createLogsExporter, component.StabilityLevelBeta),
+		exporter.WithLogs(createLogsExporter, component.StabilityLevelAlpha),
 	)
 }
 
 func CreateDefaultConfig() component.Config {
-	typ := component.MustNewType(typeStr)
 	return &Config{
-		ID:       component.NewID(typ),
 		Endpoint: "http://host.docker.internal:4320",
 		APIKey:   "",
 	}

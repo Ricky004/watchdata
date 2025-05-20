@@ -1,23 +1,21 @@
 # builder-config.yaml
 
-build: # Builder Configuration
+build:
   platforms:
     - linux/amd64
 
 dist:
   name: watchdata-collector
   description: "Custom Collector with watchdata exporter"
-  output_path: ./dist # Where the binary will be created
+  output_path: ./dist
 
 otelcol:
   version: latest
 
 components:
   receivers:
-    - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v1.32.0 
+    - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver latest
       name: otlp
   exporters:
-    - gomod: github.com/Ricky004/watchdata/internals/otelexporter v0.1.0
-      name: watchdata
-  
-
+     - gomod: github.com/Ricky004/watchdata/pkg/watchdataexporter latest
+       name: watchdataexporter
