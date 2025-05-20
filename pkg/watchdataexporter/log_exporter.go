@@ -8,15 +8,20 @@ import (
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/plog"
+	"go.opentelemetry.io/collector/pdata/plog/plogotlp"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type watchdataExporter struct {
-	endpoint string
-	apiKey   string
-	logger   *zap.Logger
-	host     component.Host
-	cancel   context.CancelFunc
+	endpoint    string
+	tlsInsecure bool
+	logger      *zap.Logger
+
+	conn   *grpc.ClientConn
+	client plogotlp.GRPCClient
+	cancel context.CancelFunc
 }
 
 func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, error) {
@@ -25,9 +30,9 @@ func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, er
 	}
 
 	return &watchdataExporter{
-		endpoint: cfg.Endpoint,
-		apiKey:   cfg.APIKey,
-		logger:   set.Logger,
+		endpoint:    cfg.Endpoint,
+		tlsInsecure: cfg.TLSInsecure,
+		logger:      set.Logger,
 	}, nil
 }
 
@@ -52,8 +57,25 @@ func createLogsExporter(
 
 // Start is a lifecycle function for the exporter.
 func (e *watchdataExporter) Start(ctx context.Context, host component.Host) error {
-	e.host = host
 	_, e.cancel = context.WithCancel(ctx)
+	 
+	target := fmt.Sprintf("passthrough:///%s", e.endpoint)
+
+	opts := []grpc.DialOption{}
+	if e.tlsInsecure {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		return fmt.Errorf("TLS is required for production")
+	}
+
+	conn, err := grpc.NewClient(target, opts...)
+	if err != nil {
+		return fmt.Errorf("failed to dial gRPC endpoint '%s': %w", e.endpoint, err)
+	}
+
+	e.conn = conn
+	e.client = plogotlp.NewGRPCClient(conn)
+
 	e.logger.Info("Starting watchdataExporter", zap.String("endpoint", e.endpoint))
 	return nil
 }
@@ -62,6 +84,12 @@ func (e *watchdataExporter) Start(ctx context.Context, host component.Host) erro
 func (e *watchdataExporter) Shutdown(ctx context.Context) error {
 	if e.cancel != nil {
 		e.cancel()
+	}
+	if e.conn != nil {
+		err := e.conn.Close()
+		if err != nil {
+			e.logger.Warn("failed to close gRPC connection", zap.Error(err))
+		}
 	}
 	e.logger.Info("Stopping watchdataExporter")
 	return nil

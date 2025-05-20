@@ -14,7 +14,6 @@ import (
 )
 
 func (e *watchdataExporter) sendLogsOverGRPC(ctx context.Context, logsData plog.Logs) error {
-	// Dial once (or reuse connection)
 	conn, err := grpc.NewClient(
 	   e.endpoint,
        grpc.WithTransportCredentials(insecure.NewCredentials(),

@@ -20,6 +20,6 @@ func NewFactory() exporter.Factory {
 func CreateDefaultConfig() component.Config {
 	return &Config{
 		Endpoint: "0.0.0.0:14317",
-		APIKey:   "",
+		TLSInsecure:   true,
 	}
 }
