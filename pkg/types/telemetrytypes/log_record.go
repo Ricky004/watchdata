@@ -20,5 +20,5 @@ type LogRecord struct {
 	SpanID           string     `json:"span_id,omitempty"`
 	TraceFlags       uint32     `json:"trace_flags,omitempty"`
 	Flags            uint32     `json:"flags,omitempty"`
-	DroppedAttrCount int        `json:"dropped_attributes_count,omitempty"`
+	DroppedAttrCount int     `json:"dropped_attributes_count,omitempty"`
 }
