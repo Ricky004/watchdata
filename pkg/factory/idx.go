@@ -57,3 +57,7 @@ func (i *IdxMap[T]) Add(factory T) (err error) {
 	i.factoriesInOrder = append(i.factoriesInOrder, factory)
 	return nil
 }
+
+func (i *IdxMap[T]) GetInOrder() []T {
+	return i.factoriesInOrder
+}
