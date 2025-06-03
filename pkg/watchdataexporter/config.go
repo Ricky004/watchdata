@@ -7,6 +7,6 @@ import (
 // Config defines configuration for the WatchData exporter.
 type Config struct {
 	component.Config `mapstructure:",squash"`
-	Endpoint         string `mapstructure:"endpoint"`
+	DSN              string `mapstructure:"dsn"`
 	TLSInsecure      bool   `mapstructure:"insecure"`
 }

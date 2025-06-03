@@ -1,4 +1,4 @@
-package telemetry
+package telemetrytypes
 
 type Any struct {
 	StringValue *string     `json:"string_value,omitempty"`

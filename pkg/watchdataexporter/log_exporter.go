@@ -3,42 +3,39 @@ package watchdataexporter
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/Ricky004/watchdata/pkg/clickhousestore"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/plog"
-	"go.opentelemetry.io/collector/pdata/plog/plogotlp"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type watchdataExporter struct {
-	endpoint    string
+	dsn         string
 	tlsInsecure bool
 	logger      *zap.Logger
-
-	conn   *grpc.ClientConn
-	client plogotlp.GRPCClient
-	cancel context.CancelFunc
+	ch     *clickhousestore.ClickHouseProvider
 }
 
-func newLogsExporter(cfg *Config, set exporter.Settings) (*watchdataExporter, error) {
-	if cfg.Endpoint == "" {
-		return nil, fmt.Errorf("endpoint must be provided for watchdataExporter")
+func newLogsExporter(cfg *Config, set exporter.Settings, ch *clickhousestore.ClickHouseProvider) (*watchdataExporter, error) {
+	if cfg.DSN == "" {
+		return nil, fmt.Errorf("DSN must be provided for watchdataExporter")
 	}
 
 	return &watchdataExporter{
-		endpoint:    cfg.Endpoint,
+		dsn:         cfg.DSN,
 		tlsInsecure: cfg.TLSInsecure,
 		logger:      set.Logger,
+		ch:          ch,
 	}, nil
 }
 
 // createLogsExporter is the factory function for the logs exporter.
 func createLogsExporter(
-	_ context.Context,
+	ctx context.Context,
 	set exporter.Settings,
 	cfg component.Config,
 ) (exporter.Logs, error) {
@@ -47,7 +44,18 @@ func createLogsExporter(
 		return nil, fmt.Errorf("unexpected config type: %T", cfg)
 	}
 
-	exp, err := newLogsExporter(conf, set)
+	clickhouseCfg := clickhousestore.Config{
+		Connection: clickhousestore.ConnectionConfig{
+			DialTimeout: 5 * time.Second,
+		},
+	}
+
+	chProvider, err := clickhousestore.NewClickHouseProvider(ctx, clickhouseCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init ClickHouse: %w", err)
+	}
+
+	exp, err := newLogsExporter(conf, set, chProvider)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create watchdata logs exporter: %w", err)
 	}
@@ -57,41 +65,13 @@ func createLogsExporter(
 
 // Start is a lifecycle function for the exporter.
 func (e *watchdataExporter) Start(ctx context.Context, host component.Host) error {
-	_, e.cancel = context.WithCancel(ctx)
-	 
-	target := fmt.Sprintf("passthrough:///%s", e.endpoint)
-
-	opts := []grpc.DialOption{}
-	if e.tlsInsecure {
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	} else {
-		return fmt.Errorf("TLS is required for production")
-	}
-
-	conn, err := grpc.NewClient(target, opts...)
-	if err != nil {
-		return fmt.Errorf("failed to dial gRPC endpoint '%s': %w", e.endpoint, err)
-	}
-
-	e.conn = conn
-	e.client = plogotlp.NewGRPCClient(conn)
-
-	e.logger.Info("Starting watchdataExporter", zap.String("endpoint", e.endpoint))
+	e.logger.Info("Starting watchdataExporter with DSN", zap.String("dsn", e.dsn))
 	return nil
 }
 
 // Shutdown is a lifecycle function for the exporter.
 func (e *watchdataExporter) Shutdown(ctx context.Context) error {
-	if e.cancel != nil {
-		e.cancel()
-	}
-	if e.conn != nil {
-		err := e.conn.Close()
-		if err != nil {
-			e.logger.Warn("failed to close gRPC connection", zap.Error(err))
-		}
-	}
-	e.logger.Info("Stopping watchdataExporter")
+	e.logger.Info("Stoping watchdataExporter with DSN", zap.String("dsn", e.dsn))
 	return nil
 }
 
@@ -102,7 +82,12 @@ func (e *watchdataExporter) Capabilities() consumer.Capabilities {
 
 // ConsumeLogs is the method that receives log data.
 func (e *watchdataExporter) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
-	return e.sendLogsOverGRPC(ctx, ld)
+	records := convertToLogRecords(ld)
+	err := e.ch.InsertLogs(ctx, records)
+	if err != nil {
+		return fmt.Errorf("failed to insert logs: %w", err)
+	}
+	return nil
 }
 
 // Compile-time check to ensure watchdataExporter implements exporter.Logs.

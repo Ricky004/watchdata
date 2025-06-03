@@ -6,6 +6,7 @@ import (
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/Ricky004/watchdata/pkg/factory"
+	"github.com/Ricky004/watchdata/pkg/types/telemetrytypes"
 )
 
 type ClickHouseProvider struct {
@@ -48,3 +49,33 @@ func NewProviderFactory() factory.ProviderFactory[*ClickHouseProvider, Config] {
 		},
 	)
 }
+
+func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytypes.LogRecord) error {
+	batch, err := p.conn.PrepareBatch(ctx, "INSERT INTO logs (timestamp, observed_time, serverity_number, serverity_text, body, attributes, resource, trace_id, span_id, trace_flags, flags, dropped_attributes_count)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare batch: %w", err)
+	}
+
+	for _, log := range logs {
+		err := batch.Append(
+			log.Timestamp,
+			log.ObservedTime,
+			log.ServerityNumber,
+			log.ServerityText,
+			log.Body,
+			log.Attributes, // might need to be converted to ClickHouse-compatible format (like JSON string)
+			log.Resource,
+			log.TraceID,
+			log.SpanID,
+			log.TraceFlags,
+			log.Flags,
+			log.DroppedAttrCount,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to append to batch: %w", err)
+		}
+	}
+
+	return batch.Send()
+}
+
