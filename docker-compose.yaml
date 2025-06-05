@@ -9,6 +9,7 @@ services:
       - "8123:8123"
     volumes:
       - clickhouse-data:/var/lib/clickhouse
+      - ./configs/clickhouse-config.xml:/etc/clickhouse-server/config.xml
     ulimits:
       nofile:
         soft: 262144
@@ -24,8 +25,7 @@ services:
     ports:
       - "4317:4317"  # OTLP gRPC
     volumes:
-      - ./configs/otel-collector-config.yaml:/otel-collector-config.yaml
-      - ./configs/clickhouse-config.xml:/etc/clickhouse-server/config.xml
+      - ./configs/otel-collector-config.yaml:/otel-collector-config.yaml 
     command: ["/dist/watchdataexporter", "--config", "/otel-collector-config.yaml"]
     restart: unless-stopped
 
