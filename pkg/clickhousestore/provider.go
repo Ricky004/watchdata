@@ -15,7 +15,7 @@ type ClickHouseProvider struct {
 
 func NewClickHouseProvider(ctx context.Context, cfg Config) (*ClickHouseProvider, error) {
 	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"localhost:9000"},
+		Addr: []string{"clickhouse:9000"},
 		Auth: clickhouse.Auth{
 			Database: "default",
 			Username: "default",
