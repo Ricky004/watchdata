@@ -8,17 +8,17 @@ dist:
 
 receivers:
   - gomod: 
-      go.opentelemetry.io/collector/receiver/otlpreceiver v0.126.0
+      go.opentelemetry.io/collector/receiver/otlpreceiver v0.127.0
   
   - gomod:
-      github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.126.0
+      github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.127.0
 
 exporters:
   - gomod: 
-      github.com/Ricky004/watchdata v0.0.1
+      github.com/Ricky004/watchdata v0.0.2
     import: 
       github.com/Ricky004/watchdata/pkg/watchdataexporter
 
 processors:
   - gomod:
-      go.opentelemetry.io/collector/processor/batchprocessor v0.126.0
+      go.opentelemetry.io/collector/processor/batchprocessor v0.127.0
