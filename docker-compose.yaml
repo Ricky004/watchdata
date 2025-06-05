@@ -7,9 +7,10 @@ services:
     ports:
       - "9000:9000"
       - "8123:8123"
+    environment:
+      - CLICKHOUSE_LISTEN_HOST=0.0.0.0
     volumes:
       - clickhouse-data:/var/lib/clickhouse
-      - ./configs/clickhouse-config.xml:/etc/clickhouse-server/config.xml
     ulimits:
       nofile:
         soft: 262144
