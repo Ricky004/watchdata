@@ -19,7 +19,7 @@ func NewFactory() exporter.Factory {
 
 func CreateDefaultConfig() component.Config {
 	return &Config{
-		DSN: "tcp://clickhouse:9000?username=default&password=pass&database=default",
+		DSN: "",
 		TLSInsecure:   true,
 	}
 }

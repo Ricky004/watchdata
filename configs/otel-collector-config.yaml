@@ -18,7 +18,7 @@ processors:
 
 exporters:
   watchdataexporter:
-    dsn: "tcp://clickhouse:9000?username=default&password=pass&database=default" 
+    dsn: "tcp://clickhouse:9000"
     insecure: true
 
 service:

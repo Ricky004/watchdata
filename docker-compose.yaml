@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  collector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watchdata-collector
+    depends_on:
+      - clickhouse
+    ports:
+      - "4317:4317"  # OTLP gRPC
+    volumes:
+      - ./configs/otel-collector-config.yaml:/otel-collector-config.yaml
+    command: ["/dist/watchdataexporter", "--config", "/otel-collector-config.yaml"]
+    restart: unless-stopped
+
+volumes:
+  clickhouse-data:
