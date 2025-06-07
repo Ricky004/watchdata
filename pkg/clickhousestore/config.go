@@ -57,7 +57,7 @@ func newConfig() factory.Configurable {
 			DialTimeout:  5 * time.Second,
 		},
 		Clickhouse: ClickhouseConfig{
-			DSN: "clickhouse:9000",
+			DSN: "tcp://clickhouse:9000/default?username=default&password=pass",
 		},
 	}
 

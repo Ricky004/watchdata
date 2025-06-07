@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<yandex>
+    <users>
+        <default>
+            <password>pass</password>
+            <networks>
+                <ip>::1</ip>
+                <ip>127.0.0.1</ip>
+                <ip>0.0.0.0/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+            <access_management>1</access_management>
+            <databases>
+                <database>default</database>
+            </databases>
+        </default>
+    </users>
+</yandex>
