@@ -16,8 +16,8 @@ func convertToLogRecords(ld plog.Logs) []telemetrytypes.LogRecord {
 				records = append(records, telemetrytypes.LogRecord{
 					Timestamp:       log.Timestamp().AsTime(),
 					ObservedTime:    log.ObservedTimestamp().AsTime(),
-					ServerityNumber: int(log.SeverityNumber()),
-					ServerityText:   log.SeverityText(),
+					SeverityNumber: int(log.SeverityNumber()),
+					SeverityText:   log.SeverityText(),
 					Body:            log.Body().AsString(),
 					// Add attributes/resource conversion if needed
 				})

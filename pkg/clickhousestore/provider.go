@@ -54,8 +54,8 @@ func (p *ClickHouseProvider) createLogsTable(ctx context.Context) error {
 	CREATE TABLE IF NOT EXISTS logs (
 		timestamp DateTime64(9) CODEC(Delta(8), ZSTD(1)),
 		observed_time DateTime64(9) CODEC(Delta(8), ZSTD(1)),
-		serverity_number Int8 CODEC(ZSTD(1)),
-		serverity_text LowCardinality(String) CODEC(ZSTD(1)),
+		severity_number Int8 CODEC(ZSTD(1)),
+		severity_text LowCardinality(String) CODEC(ZSTD(1)),
 		body String CODEC(ZSTD(1)),
 		attributes String CODEC(ZSTD(1)),
 		resource String CODEC(ZSTD(1)),
@@ -92,7 +92,7 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 		return nil // Nothing to insert
 	}
 
-	batch, err := p.conn.PrepareBatch(ctx, "INSERT INTO logs (timestamp, observed_time, serverity_number, serverity_text, body, attributes, resource, trace_id, span_id, trace_flags, flags, dropped_attributes_count)")
+	batch, err := p.conn.PrepareBatch(ctx, "INSERT INTO logs (timestamp, observed_time, severity_number, severity_text, body, attributes, resource, trace_id, span_id, trace_flags, flags, dropped_attributes_count)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare batch: %w", err)
 	}
@@ -105,8 +105,8 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 		err := batch.Append(
 			log.Timestamp,
 			log.ObservedTime,
-			log.ServerityNumber,
-			log.ServerityText,
+			log.SeverityNumber,
+			log.SeverityText,
 			log.Body,
 			attributesStr,
 			resourceStr,
@@ -134,13 +134,7 @@ func convertToString(v interface{}) string {
 		return val
 	case []byte:
 		return string(val)
-	case map[string]string:
-		bytes, err := json.Marshal(val)
-		if err != nil {
-			return ""
-		}
-		return string(bytes)
-	case map[string]interface{}:
+	case map[string]string, map[string]interface{}:
 		bytes, err := json.Marshal(val)
 		if err != nil {
 			return ""

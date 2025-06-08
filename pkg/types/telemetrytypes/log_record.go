@@ -11,8 +11,8 @@ type Resource struct {
 type LogRecord struct {
 	Timestamp        time.Time  `json:"timestamp"`
 	ObservedTime     time.Time  `json:"observed_time"`
-	ServerityNumber  int        `json:"serverity_number"`
-	ServerityText    string     `json:"serverity_text"`
+	SeverityNumber  int        `json:"severity_number"`
+	SeverityText    string     `json:"severity_text"`
 	Body             string     `json:"body"`
 	Attributes       []KeyValue `json:"attributes"`
 	Resource         Resource   `json:"resource"`
