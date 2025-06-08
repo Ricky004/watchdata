@@ -1,6 +1,8 @@
 package clickhousestore
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/Ricky004/watchdata/pkg/factory"
@@ -49,6 +51,15 @@ func NewConfigFactory() factory.Factory {
 }
 
 func newConfig() factory.Configurable {
+	// Get ClickHouse host from environment or use Docker service name
+	clickhouseHost := "clickhouse"
+	if host := os.Getenv("CLICKHOUSE_HOST"); host != "" {
+		clickhouseHost = host
+	}
+	
+	// Build DSN with proper host
+	dsn := fmt.Sprintf("tcp://%s:9000/default?username=default&password=pass", clickhouseHost)
+	
 	return Config{
 		Provider: "clickhouse",
 		Connection: ConnectionConfig{
@@ -57,10 +68,9 @@ func newConfig() factory.Configurable {
 			DialTimeout:  5 * time.Second,
 		},
 		Clickhouse: ClickhouseConfig{
-			DSN: "tcp://clickhouse:9000/default?username=default&password=pass",
+			DSN: dsn,
 		},
 	}
-
 }
 
 func (c Config) Validate() error {

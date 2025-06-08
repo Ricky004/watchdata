@@ -17,7 +17,7 @@ type watchdataExporter struct {
 	dsn         string
 	tlsInsecure bool
 	logger      *zap.Logger
-	ch     *clickhousestore.ClickHouseProvider
+	ch          *clickhousestore.ClickHouseProvider
 }
 
 func newLogsExporter(cfg *Config, set exporter.Settings, ch *clickhousestore.ClickHouseProvider) (*watchdataExporter, error) {
@@ -44,9 +44,14 @@ func createLogsExporter(
 		return nil, fmt.Errorf("unexpected config type: %T", cfg)
 	}
 
+	set.Logger.Info("Creating Clickhouse provider with DSN", zap.String("dsn", conf.DSN))
+
 	clickhouseCfg := clickhousestore.Config{
 		Connection: clickhousestore.ConnectionConfig{
 			DialTimeout: 5 * time.Second,
+		},
+		Clickhouse: clickhousestore.ClickhouseConfig{
+			DSN: conf.DSN,
 		},
 	}
 
@@ -71,7 +76,7 @@ func (e *watchdataExporter) Start(ctx context.Context, host component.Host) erro
 
 // Shutdown is a lifecycle function for the exporter.
 func (e *watchdataExporter) Shutdown(ctx context.Context) error {
-	e.logger.Info("Stoping watchdataExporter with DSN", zap.String("dsn", e.dsn))
+	e.logger.Info("Stopping watchdataExporter with DSN", zap.String("dsn", e.dsn))
 	return nil
 }
 

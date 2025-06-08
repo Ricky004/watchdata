@@ -78,4 +78,3 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 
 	return batch.Send()
 }
-

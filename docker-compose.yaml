@@ -72,7 +72,10 @@ services:
         done
         echo "ClickHouse port 9000 is ready!"
         
-        # Test ClickHouse authentication
+        # Test ClickHouse authentication (install clickhouse-client first)
+        echo "Installing ClickHouse client..."
+        apt-get update && apt-get install -y clickhouse-client || echo "Failed to install clickhouse-client"
+        
         echo "Testing ClickHouse authentication..."
         timeout 10s clickhouse-client --host clickhouse --port 9000 --user default --password pass --query "SELECT 1" || echo "Auth test failed - continuing anyway"
         
