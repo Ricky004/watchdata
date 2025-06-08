@@ -67,7 +67,7 @@ func (p *ClickHouseProvider) createLogsTable(ctx context.Context) error {
 	) ENGINE = MergeTree()
 	PARTITION BY toYYYYMM(timestamp)
 	ORDER BY (timestamp, serverity_number)
-	TTL timestamp + INTERVAL 30 DAY
+	TTL toDateTime(timestamp) + INTERVAL 30 DAY
 	SETTINGS index_granularity = 8192, compress_marks = false, compress_primary_key = false;
 	`
 
