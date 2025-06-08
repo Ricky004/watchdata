@@ -66,7 +66,7 @@ func (p *ClickHouseProvider) createLogsTable(ctx context.Context) error {
 		dropped_attributes_count UInt32 CODEC(ZSTD(1))
 	) ENGINE = MergeTree()
 	PARTITION BY toYYYYMM(timestamp)
-	ORDER BY (timestamp, serverity_number)
+	ORDER BY (timestamp, severity_number)
 	TTL toDateTime(timestamp) + INTERVAL 30 DAY
 	SETTINGS index_granularity = 8192, compress_marks = false, compress_primary_key = false;
 	`
