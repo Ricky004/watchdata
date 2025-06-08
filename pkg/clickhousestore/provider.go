@@ -102,10 +102,6 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 		attributesStr := convertAttributesToString(log.Attributes)
 		resourceStr := convertResourceToString(log.Resource)
 
-		// Ensure trace_id and span_id are properly formatted for FixedString
-		traceID := padOrTruncateString(log.TraceID, 32)
-		spanID := padOrTruncateString(log.SpanID, 16)
-
 		err := batch.Append(
 			log.Timestamp,
 			log.ObservedTime,
@@ -114,8 +110,8 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 			log.Body,
 			attributesStr,
 			resourceStr,
-			traceID,
-			spanID,
+			log.TraceID,
+			log.SpanID,
 			uint8(log.TraceFlags), // Ensure correct type
 			log.Flags,
 			uint32(log.DroppedAttrCount), // Ensure correct type
@@ -170,16 +166,3 @@ func convertResourceToString(resource telemetrytypes.Resource) string {
 	return string(bytes)
 }
 
-// Pad or truncate string to exact length for FixedString fields
-func padOrTruncateString(s string, length int) string {
-	if len(s) == length {
-		return s
-	}
-	if len(s) > length {
-		return s[:length]
-	}
-	// Pad with null bytes
-	padded := make([]byte, length)
-	copy(padded, s)
-	return string(padded)
-}
