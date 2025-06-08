@@ -18,7 +18,7 @@ func convertToLogRecords(ld plog.Logs) []telemetrytypes.LogRecord {
 		resource.Attributes().Range(func(k string, v pcommon.Value) bool {
 			resourceAttrs = append(resourceAttrs, telemetrytypes.KeyValue{
 				Key:   k,
-				Value: v,
+				Value: v.AsString(),
 			})
 			return true
 		})
@@ -34,7 +34,7 @@ func convertToLogRecords(ld plog.Logs) []telemetrytypes.LogRecord {
 				log.Attributes().Range(func(k string, v pcommon.Value) bool {
 					logAttrs = append(logAttrs, telemetrytypes.KeyValue{
 						Key:   k,
-						Value: v,
+						Value: v.AsString(),
 					})
 					return true
 				})
