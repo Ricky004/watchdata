@@ -1,8 +1,8 @@
-
 package clickhousestore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -129,14 +129,24 @@ func convertToString(v interface{}) string {
 	if v == nil {
 		return ""
 	}
-	
 	switch val := v.(type) {
 	case string:
 		return val
 	case []byte:
 		return string(val)
+	case map[string]string:
+		bytes, err := json.Marshal(val)
+		if err != nil {
+			return ""
+		}
+		return string(bytes)
+	case map[string]interface{}:
+		bytes, err := json.Marshal(val)
+		if err != nil {
+			return ""
+		}
+		return string(bytes)
 	default:
-		// For complex types, you might want to use JSON marshaling
 		return fmt.Sprintf("%v", val)
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"log"
 	"time"
 
@@ -14,52 +15,63 @@ import (
 )
 
 func main() {
-	// connect to grpc endpoint (4317)
+	// Connect to OpenTelemetry gRPC receiver
 	conn, err := grpc.NewClient("0.0.0.0:4317", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("failed to connect to gRPC: %v", err)
+		log.Fatalf("failed to connect to gRPC endpoint: %v", err)
 	}
 	defer conn.Close()
 
 	client := collectorpb.NewLogsServiceClient(conn)
 
-	// Construct log record
+	// Prepare log record data
 	now := time.Now()
 	nano := uint64(now.UnixNano())
 
+	traceID, _ := hex.DecodeString("0123456789abcdef0123456789abcdef") // 32 hex chars
+	spanID, _ := hex.DecodeString("0123456789abcdef")                 // 16 hex chars
+
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
-		SeverityText:   "INFO",
-		Body:           &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "Hello from WatchData (tridip)!"}},
-		Attributes:     []*commonpb.KeyValue{{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}}},
-		TraceId:        []byte("0123456789abcdef"),
-		SpanId:         []byte("01234567"),
+		ObservedTimeUnixNano: nano,
 		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_INFO,
+		SeverityText:   "INFO",
+		Body: &commonpb.AnyValue{
+			Value: &commonpb.AnyValue_StringValue{StringValue: "Hello from WatchData!"},
+		},
+		Attributes: []*commonpb.KeyValue{
+			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
+			{Key: "host", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "localhost"}}},
+		},
+		TraceId:              traceID,
+		SpanId:               spanID,
+		Flags:                1,
+		DroppedAttributesCount: 0,
 	}
 
-	// Add to request payload
-	req := &collectorpb.ExportLogsServiceRequest{
-		ResourceLogs: []*logspb.ResourceLogs{
+	// Create resource and scope wrapper
+	resourceLogs := &logspb.ResourceLogs{
+		Resource: &resourcepb.Resource{
+			Attributes: []*commonpb.KeyValue{
+				{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "watchdata"}}},
+			},
+		},
+		ScopeLogs: []*logspb.ScopeLogs{
 			{
-				Resource: &resourcepb.Resource{
-					Attributes: []*commonpb.KeyValue{
-						{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "watchdata"}}},
-					},
-				},
-				ScopeLogs: []*logspb.ScopeLogs{
-					{
-						LogRecords: []*logspb.LogRecord{logRecord},
-					},
-				},
+				LogRecords: []*logspb.LogRecord{logRecord},
 			},
 		},
 	}
 
-	// Send log export
-	resp, err := client.Export(context.Background(), req)
-	if err != nil {
-		log.Fatalf("failed to export logs via gRPC: %v", err)
+	// Create and send the request
+	req := &collectorpb.ExportLogsServiceRequest{
+		ResourceLogs: []*logspb.ResourceLogs{resourceLogs},
 	}
 
-	log.Printf("Exported logs via gRPC: %+v", resp)
+	resp, err := client.Export(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Failed to export logs via gRPC: %v", err)
+	}
+
+	log.Printf("Successfully exported logs: %+v", resp)
 }
