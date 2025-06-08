@@ -98,49 +98,88 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 	}
 
 	for _, log := range logs {
-		// Convert attributes and resource to JSON strings if they're not already strings
-		attributesStr := convertToString(log.Attributes)
-		resourceStr := convertToString(log.Resource)
+		// Convert attributes and resource to JSON strings
+		attributesStr := convertAttributesToString(log.Attributes)
+		resourceStr := convertResourceToString(log.Resource)
+
+		// Ensure trace_id and span_id are properly formatted for FixedString
+		traceID := padOrTruncateString(log.TraceID, 32)
+		spanID := padOrTruncateString(log.SpanID, 16)
 
 		err := batch.Append(
 			log.Timestamp,
 			log.ObservedTime,
-			log.SeverityNumber,
+			int8(log.SeverityNumber), // Ensure correct type
 			log.SeverityText,
 			log.Body,
 			attributesStr,
 			resourceStr,
-			log.TraceID,
-			log.SpanID,
-			log.TraceFlags,
+			traceID,
+			spanID,
+			uint8(log.TraceFlags), // Ensure correct type
 			log.Flags,
-			log.DroppedAttrCount,
+			uint32(log.DroppedAttrCount), // Ensure correct type
 		)
 		if err != nil {
 			return fmt.Errorf("failed to append to batch: %w", err)
 		}
 	}
 
-	return batch.Send()
+	if err := batch.Send(); err != nil {
+		return fmt.Errorf("failed to send batch: %w", err)
+	}
+
+	return nil
 }
 
-// Helper function to convert various types to string for ClickHouse storage
-func convertToString(v interface{}) string {
-	if v == nil {
-		return ""
+// Convert []KeyValue to JSON string
+func convertAttributesToString(attributes []telemetrytypes.KeyValue) string {
+	if len(attributes) == 0 {
+		return "{}"
 	}
-	switch val := v.(type) {
-	case string:
-		return val
-	case []byte:
-		return string(val)
-	case map[string]string, map[string]interface{}:
-		bytes, err := json.Marshal(val)
-		if err != nil {
-			return ""
-		}
-		return string(bytes)
-	default:
-		return fmt.Sprintf("%v", val)
+	
+	// Convert to map for cleaner JSON
+	attrMap := make(map[string]interface{})
+	for _, kv := range attributes {
+		attrMap[kv.Key] = kv.Value
 	}
+	
+	bytes, err := json.Marshal(attrMap)
+	if err != nil {
+		return "{}"
+	}
+	return string(bytes)
+}
+
+// Convert Resource to JSON string
+func convertResourceToString(resource telemetrytypes.Resource) string {
+	if len(resource.Attributes) == 0 {
+		return "{}"
+	}
+	
+	// Convert to map for cleaner JSON
+	resourceMap := make(map[string]interface{})
+	for _, kv := range resource.Attributes {
+		resourceMap[kv.Key] = kv.Value
+	}
+	
+	bytes, err := json.Marshal(resourceMap)
+	if err != nil {
+		return "{}"
+	}
+	return string(bytes)
+}
+
+// Pad or truncate string to exact length for FixedString fields
+func padOrTruncateString(s string, length int) string {
+	if len(s) == length {
+		return s
+	}
+	if len(s) > length {
+		return s[:length]
+	}
+	// Pad with null bytes
+	padded := make([]byte, length)
+	copy(padded, s)
+	return string(padded)
 }
