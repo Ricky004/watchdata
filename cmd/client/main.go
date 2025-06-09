@@ -34,19 +34,19 @@ func main() {
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
 		ObservedTimeUnixNano: nano,
-		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_ERROR,
-		SeverityText:   "ERROR",
+		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_DEBUG,
+		SeverityText:   "DEBUG",
 		Body: &commonpb.AnyValue{
-			Value: &commonpb.AnyValue_StringValue{StringValue: "ERROR from WatchData!"},
+			Value: &commonpb.AnyValue_StringValue{StringValue: "Debug from WatchData!"},
 		},
 		Attributes: []*commonpb.KeyValue{
 			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
-			{Key: "host", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "localhost"}}},
+			{Key: "host", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "local"}}},
 		},
 		TraceId:              traceID,
 		SpanId:               spanID,
-		Flags:                2,
-		DroppedAttributesCount: 0,
+		Flags:                4,
+		DroppedAttributesCount: 1,
 	}
 
 	// Create resource and scope wrapper
