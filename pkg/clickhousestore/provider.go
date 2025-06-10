@@ -133,13 +133,13 @@ func convertAttributesToString(attributes []telemetrytypes.KeyValue) string {
 	if len(attributes) == 0 {
 		return "{}"
 	}
-	
+
 	// Convert to map for cleaner JSON
 	attrMap := make(map[string]interface{})
 	for _, kv := range attributes {
 		attrMap[kv.Key] = kv.Value
 	}
-	
+
 	bytes, err := json.Marshal(attrMap)
 	if err != nil {
 		return "{}"
@@ -152,13 +152,13 @@ func convertResourceToString(resource telemetrytypes.Resource) string {
 	if len(resource.Attributes) == 0 {
 		return "{}"
 	}
-	
+
 	// Convert to map for cleaner JSON
 	resourceMap := make(map[string]interface{})
 	for _, kv := range resource.Attributes {
 		resourceMap[kv.Key] = kv.Value
 	}
-	
+
 	bytes, err := json.Marshal(resourceMap)
 	if err != nil {
 		return "{}"
@@ -166,3 +166,35 @@ func convertResourceToString(resource telemetrytypes.Resource) string {
 	return string(bytes)
 }
 
+func (p *ClickHouseProvider) GetTop10Logs(ctx context.Context) ([]telemetrytypes.LogRecord, error) {
+	var logs []telemetrytypes.LogRecord
+	
+	rows, err := p.conn.Query(ctx, `SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query: %w", err)
+	}
+
+    defer rows.Close()
+	for rows.Next() {
+		var log telemetrytypes.LogRecord
+		if err := rows.Scan(
+			&log.Timestamp,
+			&log.ObservedTime,
+			&log.SeverityNumber,
+			&log.SeverityText,
+			&log.Body,
+			&log.Attributes,
+			&log.Resource,
+			&log.TraceID,
+			&log.SpanID,
+			&log.TraceFlags,
+			&log.Flags,
+			&log.DroppedAttrCount,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		logs = append(logs, log)
+	}
+
+	return logs, nil
+}

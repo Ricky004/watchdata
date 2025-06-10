@@ -43,6 +43,7 @@ require (
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.36.0
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
 	go.opentelemetry.io/collector/component v1.33.0
 	go.opentelemetry.io/collector/exporter v0.127.0
