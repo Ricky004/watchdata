@@ -56,10 +56,10 @@ func newConfig() factory.Configurable {
 	if host := os.Getenv("CLICKHOUSE_HOST"); host != "" {
 		clickhouseHost = host
 	}
-	
+
 	// Build DSN with proper host
 	dsn := fmt.Sprintf("tcp://%s:9000/default?username=default&password=pass", clickhouseHost)
-	
+
 	return Config{
 		Provider: "clickhouse",
 		Connection: ConnectionConfig{
@@ -69,6 +69,13 @@ func newConfig() factory.Configurable {
 		},
 		Clickhouse: ClickhouseConfig{
 			DSN: dsn,
+			QuerySettings: QuerySettings{
+				MaxExecutionTime:                    300,     // 5 minutes
+				MaxExecutionTimeLeaf:                300,     // 5 minutes
+				TimeoutBeforeCheckingExecutionSpeed: 10,      // 10 seconds
+				MaxBytesToRead:                      1000000, // 1MB
+				MaxResultRowsForCHQuery:             10000,   // 10k rows
+			},
 		},
 	}
 }
