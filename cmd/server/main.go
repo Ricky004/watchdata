@@ -4,12 +4,22 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Ricky004/watchdata/pkg/api/routes"
+	"github.com/Ricky004/watchdata/pkg/api/handlers"
+	"github.com/Ricky004/watchdata/pkg/clickhousestore"
 )
 
 func main() {
+    cfg, err := clickhousestore.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+    
+    server, err := handlers.NewServer(cfg)
+    if err != nil {
+        log.Fatal("Failed to create server:", err)
+    }
 
-	log.Println("🚀 Server running at :8080")
-	http.ListenAndServe(":8080", routes.RegisterRoutes())
+	http.HandleFunc("/v1/logs", server.GetLogs)
+    log.Fatal(http.ListenAndServe(":8080", nil))
 	
 }

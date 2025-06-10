@@ -1,20 +1,32 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/Ricky004/watchdata/pkg/clickhousestore"
 )
 
+type Server struct {
+    provider *clickhousestore.ClickHouseProvider
+}
 
-var provider *clickhousestore.ClickHouseProvider
+func NewServer(cfg clickhousestore.Config) (*Server, error) {
+    provider, err := clickhousestore.NewClickHouseProvider(context.Background(), cfg)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create provider: %w", err)
+    }
+    
+    return &Server{provider: provider}, nil
+}
 
-func GetLogs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	logs, err := provider.GetTop10Logs(ctx)
+	logs, err := s.provider.GetTop10Logs(ctx)
 	if err != nil {
 		log.Printf("GetTop10Logs error: %v\n", err)
 		http.Error(w, "Failed to fetch logs", http.StatusInternalServerError)

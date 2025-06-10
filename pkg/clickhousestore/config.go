@@ -76,3 +76,11 @@ func newConfig() factory.Configurable {
 func (c Config) Validate() error {
 	return nil
 }
+
+func LoadConfig() (Config, error) {
+	cfg := newConfig().(Config)
+	if err := cfg.Validate(); err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
+}

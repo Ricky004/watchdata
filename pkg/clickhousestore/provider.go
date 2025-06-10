@@ -18,7 +18,7 @@ func NewClickHouseProvider(ctx context.Context, cfg Config) (*ClickHouseProvider
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{"clickhouse:9000"},
 		Auth: clickhouse.Auth{
-			Database: "default",
+			Database: "default", 
 			Username: "default",
 			Password: "pass",
 		},
