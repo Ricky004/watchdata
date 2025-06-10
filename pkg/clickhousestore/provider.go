@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"net/url"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/Ricky004/watchdata/pkg/factory"
@@ -16,12 +16,11 @@ type ClickHouseProvider struct {
 }
 
 func NewClickHouseProvider(ctx context.Context, cfg Config) (*ClickHouseProvider, error) {
-	clickhouseHost := "clickhouse"
-	if host := os.Getenv("CLICKHOUSE_HOST"); host != "" {
-		clickhouseHost = host
+	parsedURL, err := url.Parse(cfg.Clickhouse.DSN)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ClickHouse DSN: %w", err)
 	}
-	
-	addr := fmt.Sprintf("%s:9000", clickhouseHost)
+	addr := parsedURL.Host
 	
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{addr},
