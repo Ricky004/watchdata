@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/Ricky004/watchdata/pkg/factory"
@@ -15,8 +16,15 @@ type ClickHouseProvider struct {
 }
 
 func NewClickHouseProvider(ctx context.Context, cfg Config) (*ClickHouseProvider, error) {
+	clickhouseHost := "clickhouse"
+	if host := os.Getenv("CLICKHOUSE_HOST"); host != "" {
+		clickhouseHost = host
+	}
+	
+	addr := fmt.Sprintf("%s:9000", clickhouseHost)
+	
 	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"clickhouse:9000"},
+		Addr: []string{addr},
 		Auth: clickhouse.Auth{
 			Database: "default", 
 			Username: "default",
