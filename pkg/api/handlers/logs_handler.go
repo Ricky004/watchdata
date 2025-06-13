@@ -24,6 +24,12 @@ func NewServer(cfg clickhousestore.Config) (*Server, error) {
 }
 
 func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
+	EnableCORS(w)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	ctx := r.Context()
 
 	logs, err := s.provider.GetTop10Logs(ctx)

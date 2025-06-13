@@ -52,8 +52,6 @@ services:
       - CLICKHOUSE_PORT=9000
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=pass
-      # Force IPv4 resolution
-      - GODEBUG=netdns=go
     networks:
       - app_net
     # Force IPv4 only

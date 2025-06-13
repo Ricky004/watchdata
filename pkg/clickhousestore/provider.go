@@ -112,16 +112,16 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 		err := batch.Append(
 			log.Timestamp,
 			log.ObservedTime,
-			int8(log.SeverityNumber), // Ensure correct type
+			int8(log.SeverityNumber),
 			log.SeverityText,
 			log.Body,
 			attributesStr,
 			resourceStr,
 			log.TraceID,
 			log.SpanID,
-			uint8(log.TraceFlags), // Ensure correct type
+			uint8(log.TraceFlags), 
 			log.Flags,
-			uint32(log.DroppedAttrCount), // Ensure correct type
+			uint32(log.DroppedAttrCount), 
 		)
 		if err != nil {
 			return fmt.Errorf("failed to append to batch: %w", err)
@@ -181,17 +181,20 @@ func (p *ClickHouseProvider) GetTop10Logs(ctx context.Context) ([]telemetrytypes
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}
 
-    defer rows.Close()
+	defer rows.Close()
 	for rows.Next() {
 		var log telemetrytypes.LogRecord
+		var attributesStr, resourceStr string
+		
+		// First scan the raw data from database
 		if err := rows.Scan(
 			&log.Timestamp,
 			&log.ObservedTime,
 			&log.SeverityNumber,
 			&log.SeverityText,
 			&log.Body,
-			&log.Attributes,
-			&log.Resource,
+			&attributesStr,  // Scan into string variable
+			&resourceStr,    // Scan into string variable
 			&log.TraceID,
 			&log.SpanID,
 			&log.TraceFlags,
@@ -200,6 +203,45 @@ func (p *ClickHouseProvider) GetTop10Logs(ctx context.Context) ([]telemetrytypes
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+		
+		// Debug: Print what we actually scanned
+		fmt.Printf("DEBUG - attributesStr: '%s'\n", attributesStr)
+		fmt.Printf("DEBUG - resourceStr: '%s'\n", resourceStr)
+		
+		// Parse attributes JSON string back to []telemetrytypes.KeyValue
+		if attributesStr != "" && attributesStr != "{}" && attributesStr != "null" {
+			var attrMap map[string]interface{}
+			if err := json.Unmarshal([]byte(attributesStr), &attrMap); err != nil {
+				fmt.Printf("Failed to unmarshal attributes: %v", err)
+			} else {
+				// Convert map to []telemetrytypes.KeyValue format
+				log.Attributes = make([]telemetrytypes.KeyValue, 0, len(attrMap))
+				for key, value := range attrMap {
+					log.Attributes = append(log.Attributes, telemetrytypes.KeyValue{
+						Key:   key,
+						Value: value,
+					})
+				}
+			}
+		}
+		
+		// Parse resource JSON string back to Resource struct
+		if resourceStr != "" && resourceStr != "{}" && resourceStr != "null" {
+			var resourceMap map[string]interface{}
+			if err := json.Unmarshal([]byte(resourceStr), &resourceMap); err != nil {
+				fmt.Printf("Failed to unmarshal resources: %v", err)
+			} else {
+				// Convert map to Resource with []KeyValue format
+				log.Resource.Attributes = make([]telemetrytypes.KeyValue, 0, len(resourceMap))
+				for key, value := range resourceMap {
+					log.Resource.Attributes = append(log.Resource.Attributes, telemetrytypes.KeyValue{
+						Key:   key,
+						Value: value,
+					})
+				}
+			}
+		}
+		
 		logs = append(logs, log)
 	}
 

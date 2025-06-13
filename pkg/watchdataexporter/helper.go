@@ -52,7 +52,7 @@ func convertToLogRecords(ld plog.Logs) []telemetrytypes.LogRecord {
 				records = append(records, telemetrytypes.LogRecord{
 					Timestamp:        log.Timestamp().AsTime(),
 					ObservedTime:     log.ObservedTimestamp().AsTime(),
-					SeverityNumber:   int(log.SeverityNumber()),
+					SeverityNumber:   int8(log.SeverityNumber()),
 					SeverityText:     log.SeverityText(),
 					Body:             log.Body().AsString(),
 					Attributes:       logAttrs,
@@ -61,9 +61,9 @@ func convertToLogRecords(ld plog.Logs) []telemetrytypes.LogRecord {
 					},
 					TraceID:          traceID,
 					SpanID:           spanID,
-					TraceFlags:       uint32(log.Flags()),
+					TraceFlags:       uint8(log.Flags()),
 					Flags:            uint32(log.Flags()),
-					DroppedAttrCount: int(log.DroppedAttributesCount()),
+					DroppedAttrCount: uint32(log.DroppedAttributesCount()),
 				})
 			}
 		}

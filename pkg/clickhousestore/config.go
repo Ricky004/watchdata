@@ -52,9 +52,10 @@ func NewConfigFactory() factory.Factory {
 
 func newConfig() factory.Configurable {
 	// Get ClickHouse host from environment or use Docker service name
-	clickhouseHost := "clickhouse"
-	if host := os.Getenv("CLICKHOUSE_HOST"); host != "" {
-		clickhouseHost = host
+	clickhouseHost := os.Getenv("CLICKHOUSE_HOST")
+	if clickhouseHost == "" || clickhouseHost == "clickhouse" {
+		// dev phase
+		clickhouseHost = "localhost"
 	}
 
 	// Build DSN with proper host
