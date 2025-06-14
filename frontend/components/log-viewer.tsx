@@ -1,12 +1,11 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useEffect, useState } from "react";
-import { getTop10Logs } from "@/api/logs";
-import React from "react";
-import { useLiveLogs } from "@/hooks/use-live-logs";
-import { Button } from "./ui/button";
-
+import { useEffect, useState, useRef } from "react"
+import { getTop10Logs, getLogsSince } from "@/api/logs"
+import React from "react"
+import { useLiveLogs } from "@/hooks/use-live-logs"
+import { Button } from "./ui/button"
 
 export type Log = {
   timestamp: string;
@@ -36,15 +35,48 @@ function getSeverityClass(severity: string): string {
 }
 
 export default function LogRecord() {
-  const [live, setLive] = useState(false);
-  const { logs } = useLiveLogs(live);
-  const [fallbackLogs, setFallbackLogs] = useState<Log[]>([]);
+  const [live, setLive] = useState(true)
+  const [logs, setLogs] = useState<Log[]>([])
+  const { logs: liveLogs } = useLiveLogs(live)
+  const lastSeenTimestamp = useRef<string | null>(null)
 
+  // Update last seen timestamp when logs change
   useEffect(() => {
-    if (!live) {
-      getTop10Logs().then(setFallbackLogs);
+    if (logs.length > 0) {
+      lastSeenTimestamp.current = logs[logs.length - 1].timestamp
     }
-  }, [live]);
+  }, [logs])
+
+  // On mount, load initial logs
+  useEffect(() => {
+    getTop10Logs().then((initialLogs) => {
+      setLogs(initialLogs)
+    })
+  }, [])
+
+  // When liveLogs change → append new ones
+  useEffect(() => {
+    if (live && liveLogs.length > 0) {
+      setLogs((prev) => {
+        const existingTimestamps = new Set(prev.map(log => log.timestamp))
+        const newUnique = liveLogs.filter(log => !existingTimestamps.has(log.timestamp))
+        return [...prev, ...newUnique]
+      })
+    }
+  }, [liveLogs, live])
+
+  // When live mode is turned ON again → fetch missing logs since last timestamp
+  useEffect(() => {
+    if (live && lastSeenTimestamp.current) {
+      getLogsSince(lastSeenTimestamp.current).then((missedLogs) => {
+        setLogs((prev) => {
+          const existingTimestamps = new Set(prev.map(log => log.timestamp))
+          const newUnique = missedLogs.filter(log => !existingTimestamps.has(log.timestamp))
+          return [...prev, ...newUnique]
+        })
+      })
+    }
+  }, [live])
 
   return (
     <div className="absolute bottom-0 left-0 w-full">
@@ -56,8 +88,8 @@ export default function LogRecord() {
       </div>
       <ScrollArea className="h-110 w-full border">
         <div className="min-w-full">
-          {(live ? logs: fallbackLogs).map((log, i) => (
-            <React.Fragment key={i}>
+          {logs.map((log, i) => (
+            <React.Fragment key={`${log.timestamp}-${i}`}>
               <div className="w-full font-mono text-sm px-4 py-2 border-b border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 whitespace-pre-wrap">
                 <span className="text-gray-500">[{log.timestamp}]</span>{' '}
                 <span className={`${getSeverityClass(log.severity_text)} font-semibold`}>
@@ -73,5 +105,5 @@ export default function LogRecord() {
         </div>
       </ScrollArea>
     </div>
-  );
+  )
 }

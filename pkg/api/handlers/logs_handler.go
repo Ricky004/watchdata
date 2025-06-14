@@ -110,6 +110,37 @@ func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) GetLogsSince(w http.ResponseWriter, r *http.Request) {
+	EnableCORS(w)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	ts := r.URL.Query().Get("timestamp")
+	if ts == "" {
+		http.Error(w, "Missing timestamp parameter", http.StatusBadRequest)
+		return
+	}
+
+	parsedTime, err := time.Parse(time.RFC3339Nano, ts)
+	if err != nil {
+		http.Error(w, "Invalid timestamp format", http.StatusBadRequest)
+		return
+	}
+
+	logs, err := s.provider.GetLogsSince(r.Context(), parsedTime)
+	if err != nil {
+		log.Printf("GetLogsSince error: %v\n", err)
+		http.Error(w, "Failed to fetch logs", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
+
+
 // WebSocket handler
 func (s *Server) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	EnableCORS(w)

@@ -24,6 +24,7 @@ func main() {
 	// Register routes
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/logs", server.GetLogs)
+	mux.HandleFunc("/v1/logs/since", server.GetLogsSince)
 	mux.HandleFunc("/ws", server.WebSocketHandler)
 
 	log.Println("🚀 Server started on :8080")

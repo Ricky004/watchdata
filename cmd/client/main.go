@@ -28,8 +28,8 @@ func main() {
 	now := time.Now()
 	nano := uint64(now.UnixNano())
 
-	traceID, _ := hex.DecodeString("0123456789abcdef0123456789abcdef") // 32 hex chars
-	spanID, _ := hex.DecodeString("0123456789abcdef")                 // 16 hex chars
+	traceID, _ := hex.DecodeString("2123252589abcdef0123456785abcdef") // 32 hex chars
+	spanID, _ := hex.DecodeString("2124466449abcdef")                 // 16 hex chars
 
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
