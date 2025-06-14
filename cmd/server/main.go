@@ -9,17 +9,23 @@ import (
 )
 
 func main() {
-    cfg, err := clickhousestore.LoadConfig()
+	// Load ClickHouse configuration
+	cfg, err := clickhousestore.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
-    
-    server, err := handlers.NewServer(cfg)
-    if err != nil {
-        log.Fatal("Failed to create server:", err)
-    }
 
-	http.HandleFunc("/v1/logs", server.GetLogs)
-    log.Fatal(http.ListenAndServe(":8080", nil))
-	
+	// Initialize server with ClickHouse provider
+	server, err := handlers.NewServer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
+
+	// Register routes
+	mux := http.NewServeMux()
+	mux.HandleFunc("/v1/logs", server.GetLogs)
+	mux.HandleFunc("/ws", server.WebSocketHandler)
+
+	log.Println("🚀 Server started on :8080")
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

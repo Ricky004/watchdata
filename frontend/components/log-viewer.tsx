@@ -4,9 +4,11 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useEffect, useState } from "react";
 import { getTop10Logs } from "@/api/logs";
 import React from "react";
+import { useLiveLogs } from "@/hooks/use-live-logs";
+import { Button } from "./ui/button";
 
 
-type Log = {
+export type Log = {
   timestamp: string;
   observed_time: string;
   severity_number: string;
@@ -34,20 +36,27 @@ function getSeverityClass(severity: string): string {
 }
 
 export default function LogRecord() {
-  const [logs, setLogs] = useState<Log[]>([]);
+  const [live, setLive] = useState(false);
+  const { logs } = useLiveLogs(live);
+  const [fallbackLogs, setFallbackLogs] = useState<Log[]>([]);
 
   useEffect(() => {
-    getTop10Logs().then(setLogs);
-  }, []);
+    if (!live) {
+      getTop10Logs().then(setFallbackLogs);
+    }
+  }, [live]);
 
   return (
     <div className="absolute bottom-0 left-0 w-full">
+      <Button onClick={() => setLive((prev) => !prev)}>
+        {live ? 'Live: on' : 'Live: off'}
+      </Button>
       <div className="mb-0.5 p-1 border bg-gray-100 dark:bg-slate-700">
         <h2 className="text-sm font-semibold">Log view</h2>
       </div>
       <ScrollArea className="h-110 w-full border">
         <div className="min-w-full">
-          {logs.map((log, i) => (
+          {(live ? logs: fallbackLogs).map((log, i) => (
             <React.Fragment key={i}>
               <div className="w-full font-mono text-sm px-4 py-2 border-b border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 whitespace-pre-wrap">
                 <span className="text-gray-500">[{log.timestamp}]</span>{' '}

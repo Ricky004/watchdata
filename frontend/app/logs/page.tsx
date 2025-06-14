@@ -1,4 +1,4 @@
-import LogRecord from "@/components/log-record";
+import LogRecord from "@/components/log-viewer";
 
 export default function LogsPage() {
   return (
