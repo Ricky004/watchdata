@@ -1,9 +1,9 @@
-import LogRecord from "@/components/log-viewer";
+import LogViewer from "@/components/log-viewer";
 
 export default function LogsPage() {
   return (
     <main>
-      <LogRecord />
+      <LogViewer />
     </main>
   );
 }

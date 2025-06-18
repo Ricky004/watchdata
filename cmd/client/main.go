@@ -34,10 +34,10 @@ func main() {
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
 		ObservedTimeUnixNano: nano,
-		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_WARN,
-		SeverityText:   "WARN",
+		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_ERROR,
+		SeverityText:   "INFO",
 		Body: &commonpb.AnyValue{
-			Value: &commonpb.AnyValue_StringValue{StringValue: "Debug from WatchData!"},
+			Value: &commonpb.AnyValue_StringValue{StringValue: "Info from WatchData!"},
 		},
 		Attributes: []*commonpb.KeyValue{
 			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
