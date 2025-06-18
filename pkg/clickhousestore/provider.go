@@ -206,6 +206,40 @@ func (p *ClickHouseProvider) GetLogsSince(ctx context.Context, since time.Time) 
 	return logs, nil
 }
 
+func (p *ClickHouseProvider) GetLogsInTimeRanges(ctx context.Context, startTs, endTs int64) ([]telemetrytypes.LogRecord, error) {
+	query := `SELECT * FROM logs
+			  WHERE timestamp >= toDateTime(?) AND timestamp <= toDateTime(?)
+			  ORDER BY timestamp DESC
+			  LIMIT 1000
+			  `
+
+	rows, err := p.conn.Query(ctx, query, startTs, endTs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query for new logs: %w", err)
+	}
+	defer rows.Close()
+
+	var logs []telemetrytypes.LogRecord
+	for rows.Next() {
+		var log telemetrytypes.LogRecord
+		var attributesStr, resourceStr string
+
+		if err := rows.Scan(
+			&log.Timestamp, &log.ObservedTime, &log.SeverityNumber, &log.SeverityText, &log.Body,
+			&attributesStr, &resourceStr, &log.TraceID, &log.SpanID,
+			&log.TraceFlags, &log.Flags, &log.DroppedAttrCount,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan new log row: %w", err)
+		}
+
+		log.Attributes = parseAttributes(attributesStr)
+		log.Resource.Attributes = parseResource(resourceStr)
+		logs = append(logs, log)
+	}
+
+	return logs, nil
+}
+
 // helper functions
 // Convert []KeyValue to JSON string
 func convertAttributesToString(attributes []telemetrytypes.KeyValue) string {

@@ -2,7 +2,7 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react"
-import { getTop10Logs, getLogsSince } from "@/api/logs"
+import { getTop10Logs, getLogsSince, getLogsInTimeRanges } from "@/api/logs"
 import React from "react"
 import { useLiveLogs } from "@/hooks/use-live-logs"
 import LiveToggleButton from "./live-toggle-btn"
@@ -34,32 +34,37 @@ function getSeverityClass(severity: string): string {
   return severityColorMap[severity.toUpperCase()] || 'text-gray-500'
 }
 
+const TIME_RANGES = [
+  { label: "15m", value: 15 * 60 },
+  { label: "1h", value: 60 * 60 },
+  { label: "4h", value: 4 * 60 * 60 },
+  { label: "24h", value: 24 * 60 * 60 },
+];
+
 export default function LogViewer() {
   const [live, setLive] = useState(true)
   const [paused, setPaused] = useState(false)
   const [autoScroll, setAutoScroll] = useState(true)
   const [logs, setLogs] = useState<Log[]>([])
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
+  const [selectedRange, setSelectedRange] = useState<number | null>(null)
   const lastSeenTimestamp = useRef<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const { logs: liveLogs } = useLiveLogs(live)
 
-  // Load initial logs
   useEffect(() => {
     getTop10Logs().then((initialLogs) => {
       setLogs(initialLogs)
     })
   }, [])
 
-  // Update last seen timestamp
   useEffect(() => {
     if (logs.length > 0) {
       lastSeenTimestamp.current = logs[logs.length - 1].timestamp
     }
   }, [logs])
 
-  // Append live logs if not paused
   useEffect(() => {
     if (!live || paused || liveLogs.length === 0) return
     setLogs((prev) => {
@@ -69,7 +74,6 @@ export default function LogViewer() {
     })
   }, [liveLogs, live, paused])
 
-  // Fetch missed logs when turning live back on
   useEffect(() => {
     if (live && lastSeenTimestamp.current) {
       getLogsSince(lastSeenTimestamp.current).then((missedLogs) => {
@@ -82,14 +86,26 @@ export default function LogViewer() {
     }
   }, [live])
 
-  // Scroll to bottom when new logs arrive
   useEffect(() => {
     if (autoScroll && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [logs, autoScroll])
 
-  // Toggle expanded JSON view
+  useEffect(() => {
+    if (live) {
+      setSelectedRange(null)
+    }
+  }, [live])
+
+  useEffect(() => {
+    if (live || selectedRange === null) return;
+    const now = Math.floor(Date.now() / 1000);
+    const start = now - selectedRange;
+
+    getLogsInTimeRanges(start, now).then(setLogs).catch(console.error);
+  }, [selectedRange, live])
+
   const toggleLog = (id: string) => {
     setExpandedLogs(prev => {
       const newSet = new Set(prev)
@@ -119,6 +135,24 @@ export default function LogViewer() {
         >
           {autoScroll ? "Auto-Scroll: ON" : "Auto-Scroll: OFF"}
         </button>
+      </div>
+
+      {/* Time Range Selector */}
+      <div className="absolute top-3 left-3 z-10 flex gap-2">
+        {TIME_RANGES.map((range) => (
+          <button
+            key={range.value}
+            onClick={() => {
+              setSelectedRange(range.value)
+              setLive(false)
+            }}
+            className={`px-2 py-1 text-xs rounded border ${
+              selectedRange === range.value ? "bg-blue-600 text-white" : "bg-white text-gray-700"
+            }`}
+          >
+            Last {range.label}
+          </button>
+        ))}
       </div>
 
       {/* Log Viewer */}

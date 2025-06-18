@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -87,7 +88,6 @@ func (s *Server) startDatabasePoller() {
 	}()
 }
 
-
 func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
 	EnableCORS(w)
 	if r.Method == http.MethodOptions {
@@ -140,6 +140,42 @@ func (s *Server) GetLogsSince(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(logs)
 }
 
+func (s *Server) GetLogsInTimeRanges(w http.ResponseWriter, r *http.Request) {
+	EnableCORS(w)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
+
+	startTs, err := strconv.ParseInt(start, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid 'start' parameter", http.StatusBadRequest)
+		return
+	}
+	endTs, err := strconv.ParseInt(end, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid 'end' parameter", http.StatusBadRequest)
+		return
+	}
+
+	if startTs > endTs {
+		http.Error(w, "'start' must be less than 'end'", http.StatusBadRequest)
+		return
+	}
+
+	logs, err := s.provider.GetLogsInTimeRanges(r.Context(), startTs, endTs)
+	if err != nil {
+		log.Printf("GetLogsInTimeRanges error: %v\n", err)
+		http.Error(w, "Failed to fetch logs", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
 
 // WebSocket handler
 func (s *Server) WebSocketHandler(w http.ResponseWriter, r *http.Request) {

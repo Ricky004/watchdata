@@ -25,6 +25,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/logs", server.GetLogs)
 	mux.HandleFunc("/v1/logs/since", server.GetLogsSince)
+	mux.HandleFunc("/v1/logs/timerange", server.GetLogsInTimeRanges)
 	mux.HandleFunc("/ws", server.WebSocketHandler)
 
 	log.Println("🚀 Server started on :8080")
