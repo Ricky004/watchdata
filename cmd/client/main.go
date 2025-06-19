@@ -35,7 +35,7 @@ func main() {
 		TimeUnixNano:   nano,
 		ObservedTimeUnixNano: nano,
 		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_ERROR,
-		SeverityText:   "INFO",
+		SeverityText:   "ERROR",
 		Body: &commonpb.AnyValue{
 			Value: &commonpb.AnyValue_StringValue{StringValue: "Info from WatchData!"},
 		},

@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Play, Pause } from 'lucide-react';
 
 type LiveToggleButtonProps = {
     live: boolean
@@ -11,9 +12,19 @@ export default function LiveToggleButton({ live, toggleLive }: LiveToggleButtonP
     return (
         <Button
             onClick={toggleLive}
-            className={`${live ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"} px-6 py-3 text-lg text-white`}
+            className={`${live ? "bg-red-600 hover:bg-red-700" : "bg-gray-600 hover:bg-gray-700"} px-6 py-3 text-base text-white`}
         >
-            {live ? 'Live: on' : 'Live: off'}
+            {live ? (
+                <>
+                  <Pause />
+                   Live
+                </>
+            ) : (
+                <>
+                    <Play />
+                    Live
+                </>
+            )}
         </Button>
     )
 }
