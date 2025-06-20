@@ -21,6 +21,7 @@ import { Separator } from "./ui/separator"
 import FacetFilters from "./facet-filters"
 import { Button } from "./ui/button"
 import React from "react"
+import LogChart from "./graphs/log-volume"
 
 
 const severityColorMap: Record<string, string> = {
@@ -179,7 +180,11 @@ export default function LogViewer() {
         </div>
       </div>
       <Separator />
-      
+
+      <div className="mt-20">
+        <LogChart logs={logs} />
+      </div>
+
       <div className="">
         {/* Sidebar (Facet Filters) */}
         <div className="bg-white dark:bg-slate-900 absolute bottom-0">
