@@ -1,4 +1,4 @@
-import { Log } from "@/components/log-viewer";
+import { Log } from "@/components/types/log-type";
 
 export async function getTop10Logs() {
   const res = await fetch('http://localhost:8080/v1/logs');

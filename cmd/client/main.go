@@ -34,10 +34,10 @@ func main() {
 	logRecord := &logspb.LogRecord{
 		TimeUnixNano:   nano,
 		ObservedTimeUnixNano: nano,
-		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_ERROR,
-		SeverityText:   "ERROR",
+		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_FATAL,
+		SeverityText:   "CRITICAL",
 		Body: &commonpb.AnyValue{
-			Value: &commonpb.AnyValue_StringValue{StringValue: "Info from WatchData!"},
+			Value: &commonpb.AnyValue_StringValue{StringValue: "K8s return a server 505 error to the request you send that not reach there to get the system call"},
 		},
 		Attributes: []*commonpb.KeyValue{
 			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
@@ -53,7 +53,7 @@ func main() {
 	resourceLogs := &logspb.ResourceLogs{
 		Resource: &resourcepb.Resource{
 			Attributes: []*commonpb.KeyValue{
-				{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "watchdata"}}},
+				{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "watchdata-service-critical"}}},
 			},
 		},
 		ScopeLogs: []*logspb.ScopeLogs{

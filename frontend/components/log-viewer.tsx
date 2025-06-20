@@ -3,8 +3,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react"
 import { getTop10Logs, getLogsSince, getLogsInTimeRanges } from "@/api/logs"
-import React from "react"
 import { useLiveLogs } from "@/hooks/use-live-logs"
+import { Log } from "./types/log-type"
 import LiveToggleButton from "./live-toggle-btn"
 import {
   Select,
@@ -15,22 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Timer } from 'lucide-react';
+import { Timer, Download } from 'lucide-react';
+import { SidebarTrigger } from "./ui/sidebar"
+import { Separator } from "./ui/separator"
+import FacetFilters from "./facet-filters"
+import { Button } from "./ui/button"
+import React from "react"
 
-export type Log = {
-  timestamp: string;
-  observed_time: string;
-  severity_number: string;
-  severity_text: string;
-  body: string;
-  attributes: string;
-  resource: string;
-  trace_id: string;
-  span_id: string;
-  trace_flags: string;
-  flags: string;
-  dropped_attributes_count: string;
-};
 
 const severityColorMap: Record<string, string> = {
   DEBUG: 'text-blue-500',
@@ -63,8 +54,6 @@ export default function LogViewer() {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   const { logs: liveLogs } = useLiveLogs(live)
-
-  const allLevels = ["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
 
   useEffect(() => {
     getTop10Logs().then((initialLogs) => {
@@ -136,118 +125,162 @@ export default function LogViewer() {
     })
   }
 
+  // Filter logs based on selected levels
+  const filteredLogs = logs.filter(log =>
+    selectedLevels.length === 0 || selectedLevels.includes(log.severity_text.toUpperCase())
+  )
+
   return (
     <div>
-      <div className="flex gap-1 justify-end">
-
-        {/* Time range */}
-        <div className="mt-3 mr-2">
-          <Select
-            value={selectedRange !== null ? selectedRange.toString() : ""}
-            onValueChange={(value) => {
-              setSelectedRange(Number(value))
-              setLive(false)
-            }}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Select a range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>time range</SelectLabel>
-                {TIME_RANGES.map((range) => (
-                  <SelectItem
-                    key={range.value}
-                    value={range.value.toString()}
-                  >
-                    <Timer /> Last {range.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+      <div className="flex gap-1 justify-between">
+        <div className="m-2">
+          <SidebarTrigger className="-ml-1" />
         </div>
+        <div className="flex">
+          {/* Time range */}
+          <div className="m-2">
+            <Select
+              value={selectedRange !== null ? selectedRange.toString() : ""}
+              onValueChange={(value) => {
+                setSelectedRange(Number(value))
+                setLive(false)
+              }}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Select a range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>time range</SelectLabel>
+                  {TIME_RANGES.map((range) => (
+                    <SelectItem
+                      key={range.value}
+                      value={range.value.toString()}
+                    >
+                      <Timer /> Last {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Control Buttons */}
-        <div className="pt-3 pr-2 flex gap-2">
-          <LiveToggleButton live={live} toggleLive={() => setLive(prev => !prev)} />
-          <button
-            onClick={() => setPaused(p => !p)}
-            className={`px-4 py-2 rounded text-sm ${paused ? "bg-yellow-500" : "bg-green-600"} text-white`}
-          >
-            {paused ? "Resume" : "Pause"}
-          </button>
+          {/* Control Buttons */}
+          <div className="flex gap-2 mt-2 mb-2">
+            <LiveToggleButton live={live} toggleLive={() => setLive(prev => !prev)} />
+            <button
+              onClick={() => setPaused(p => !p)}
+              className={`px-4 py-2 rounded text-sm ${paused ? "bg-yellow-500" : "bg-green-600"} text-white`}
+            >
+              {paused ? "Resume" : "Pause"}
+            </button>
 
+          </div>
         </div>
       </div>
-
-      <div className="flex gap-2 mt-10 p-2">
-        {allLevels.map(level => (
-          <button
-            key={level}
-            onClick={() => {
-              setSelectedLevels(prev =>
-                prev.includes(level)
-                  ? prev.filter(l => l !== level)
-                  : [...prev, level]
-              )
-            }}
-            className={`px-3 py-1 rounded text-sm border ${selectedLevels.includes(level)
-              ? `${severityColorMap[level]} border-black font-bold`
-              : "bg-gray-200 text-gray-800"
-              }`}
-          >
-            {level}
-          </button>
-        ))}
-      </div>
-
-      {/* Log Viewer */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <div className="mb-0.5 p-1 border bg-gray-100 dark:bg-slate-700">
-          <h2 className="text-sm font-semibold">Log view</h2>
+      <Separator />
+      
+      <div className="">
+        {/* Sidebar (Facet Filters) */}
+        <div className="bg-white dark:bg-slate-900 absolute bottom-0">
+          <FacetFilters
+            selectedLevels={selectedLevels}
+            setSelectedLevels={setSelectedLevels}
+          />
         </div>
-        <ScrollArea className="h-110 w-full border" ref={scrollAreaRef}>
-          <div className="min-w-full">
-            {logs
-              .filter(log => selectedLevels.length === 0 || selectedLevels.includes(log.severity_text.toUpperCase()))
-              .map((log, i) => {
+
+        {/* Main Content (Log Viewer) */}
+        <div className="bg-gray-50 dark:bg-slate-800 absolute bottom-0 left-[280px] right-0">
+          <div className="flex justify-end p-1 border bg-white dark:bg-slate-700">
+            <Button><Download /> Download as CSV</Button>
+          </div>
+          {/* Header row */}
+          <div className="p-2 border-b bg-gray-100 dark:bg-slate-700">
+            <div className="grid grid-cols-14 gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <div className="col-span-3">DATE</div>
+              <div className="col-span-2">SEVERITY LEVEL</div>
+              <div className="col-span-2">SERVICE</div>
+              <div className="col-span-7">CONTENT</div>
+            </div>
+          </div>
+
+          {/* Scrollable Logs */}
+          <ScrollArea className="h-110 w-full border" ref={scrollAreaRef}>
+            <div className="min-w-full">
+              {filteredLogs.map((log, i) => {
                 const logId = `${log.timestamp}-${i}`
                 const isExpanded = expandedLogs.has(logId)
+                const latestTimestamp = logs.reduce((latest, log) => {
+                  return new Date(log.timestamp) > new Date(latest) ? log.timestamp : latest
+                }, logs[0]?.timestamp || "")
+                const isLatestLog = log.timestamp === latestTimestamp
+
                 return (
                   <React.Fragment key={logId}>
-                    <div className="w-full font-mono text-sm px-4 py-2 border-b border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 whitespace-pre-wrap">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="text-gray-500">[{log.timestamp}]</span>{' '}
-                          <span className={`${getSeverityClass(log.severity_text)} font-semibold`}>
-                            {log.severity_text.toUpperCase()}:
-                          </span>{' '}
-                          <span className="text-gray-500 dark:text-gray-200">{log.body}</span>{' '}
-                          <span className="text-gray-400">
-                            (trace_id={log.trace_id} span_id={log.span_id})
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => toggleLog(logId)}
-                          className="text-blue-500 hover:underline text-xs ml-4"
-                        >
-                          {isExpanded ? "Hide JSON" : "View JSON"}
-                        </button>
-                      </div>
+                    <div className="w-full font-mono text-sm border-b border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 whitespace-pre-wrap relative">
+                      {/* Active Bar */}
+                      <div
+                        className={`absolute left-0 top-0 w-1 h-full ${isLatestLog ? "bg-red-500" : "bg-sky-200"
+                          }`}
+                      />
 
-                      {isExpanded && (
-                        <pre className="mt-2 p-2 rounded bg-gray-100 dark:bg-slate-700 text-xs overflow-x-auto">
-                          {JSON.stringify(log, null, 2)}
-                        </pre>
-                      )}
+                      <div className="px-4 py-2 ml-2">
+                        <div className="grid grid-cols-14 gap-2 items-center">
+                          <div className="col-span-3">
+                            <span className="text-gray-500">{log.timestamp}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span
+                              className={`${getSeverityClass(
+                                log.severity_text
+                              )} font-semibold`}
+                            >
+                              {log.severity_text.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-gray-500">
+                              {
+                                log.resource?.attributes?.find(
+                                  (a: { key: string; value: string }) =>
+                                    a.key === "service.name"
+                                )?.value || "—"
+                              }
+                            </span>
+                          </div>
+                          <div className="col-span-6">
+                            <span className="text-gray-500 dark:text-gray-200">
+                              {log.body}
+                            </span>
+                            <span className="text-gray-400 text-xs ml-2">
+                              (trace_id={log.trace_id} span_id={log.span_id})
+                            </span>
+                          </div>
+                          <div className="col-span-1 text-right">
+                            <button
+                              onClick={() => toggleLog(logId)}
+                              className="text-blue-500 hover:underline text-xs"
+                            >
+                              {isExpanded ? "Hide JSON" : "View JSON"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <pre className="mt-2 p-2 rounded bg-gray-100 dark:bg-slate-700 text-xs overflow-x-auto">
+                            {JSON.stringify(log, null, 2)}
+                          </pre>
+                        )}
+                      </div>
                     </div>
                   </React.Fragment>
                 )
               })}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
+
     </div>
   )
 }
