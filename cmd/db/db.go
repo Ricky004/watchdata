@@ -1,6 +1,19 @@
 package main
 
 // import (
+// 	"fmt"
+// 	"log"
+// 	"os"
+
+// 	"github.com/Ricky004/watchdata/pkg/otelpipeline/builderconfig"
+// 	"github.com/Ricky004/watchdata/pkg/otelpipeline/exporter"
+// 	"github.com/Ricky004/watchdata/pkg/otelpipeline/processors"
+// 	"github.com/Ricky004/watchdata/pkg/otelpipeline/receviers"
+// 	"github.com/Ricky004/watchdata/pkg/types/otelpipelinetypes"
+// 	"gopkg.in/yaml.v3"
+// )
+
+// import (
 // 	"context"
 // 	"database/sql"
 // 	"fmt"
@@ -75,4 +88,59 @@ package main
 // 	}
 
 // 	fmt.Printf("📦 Retrieved: ID=%d, Name=%s, CreatedAt=%s\n", id, name, createdAt.Format(time.RFC3339))
+// }
+
+// func main() {
+// 	// Step 1: User selection (you'd get this from UI)
+// 	selectedReceivers1 := []string{"otlp", "filelog"}
+// 	selectedProcessors1 := []string{"batch"}
+// 	selectedExporter1 := []string{"watchdataexporter"}
+
+// 	selectedReceivers2 := []string{"filelog"}
+
+// 	// Step 2: Build component blocks
+// 	receivers := receviers.BuildReceivers(selectedReceivers1)
+// 	processors := processors.BuildProcessors(selectedProcessors1)
+// 	exporter := exporter.BuildExporter(selectedExporter1)
+
+// 	// Step 3: Build pipeline section
+// 	pipelines := map[string]otelpipelinetypes.Pipeline{
+// 		"logs": {
+// 			Receivers:  selectedReceivers1,
+// 			Processors: selectedProcessors1,
+// 			Exporters: selectedExporter1,
+// 		},
+// 		"logs/2": {
+// 			Receivers:  selectedReceivers2,
+// 		},
+// 	}
+
+// 	// Step 4: Wrap into final config
+// 	config := otelpipelinetypes.OTelConfig{
+// 		Receivers:  receivers,
+// 		Processors: processors,
+// 		Exporters: exporter,
+// 		Service: otelpipelinetypes.ServiceConfig{
+// 			Pipelines: pipelines,
+// 		},
+// 	}
+
+// 	// Step 5: Marshal and write to otel-config.yaml
+// 	data, err := yaml.Marshal(config)
+// 	if err != nil {
+// 		fmt.Println("Failed to marshal YAML:", err)
+// 		os.Exit(1)
+// 	}
+
+// 	if err := os.WriteFile("otel-collector-config.yaml", data, 0644); err != nil {
+// 		fmt.Println("Failed to write file:", err)
+// 		os.Exit(1)
+// 	}
+
+// 	err = builderconfig.SyncBuilderConfig("builder-config.yaml", selectedReceivers1, selectedProcessors1, selectedExporter1)
+// 	if err != nil {
+// 		log.Fatalf("failed to update builder-config.yaml: %v", err)
+// 	}
+
+// 	fmt.Println("otel-config.yaml generated successfully 🎉")
 // }

@@ -43,10 +43,11 @@ func main() {
 			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
 			{Key: "host", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "local"}}},
 		},
-		TraceId:              traceID,
+		TraceId:              traceID,  
 		SpanId:               spanID,
 		Flags:                4,
 		DroppedAttributesCount: 1,
+		
 	}
 
 	// Create resource and scope wrapper
