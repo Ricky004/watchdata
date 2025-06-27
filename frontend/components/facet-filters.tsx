@@ -16,8 +16,8 @@ type FacetCategory = {
 }
 
 type FacetFiltersProps = {
-  selectedLevels: string[]
-  setSelectedLevels: (levels: string[]) => void
+  selected: string[]
+  setSelected: (levels: string[]) => void
 }
 
 const FACETS: FacetCategory[] = [
@@ -45,14 +45,24 @@ const FACETS: FacetCategory[] = [
       { label: "CRITICAL", count: "6.7k" },
     ],
   },
+  {
+    title: "Service",
+    values: [
+      { label: "auth-service", count: "13.0k" },
+      { label: "api-gateway", count: "9.1k" },
+      { label: "frontend", count: "6.7k" },
+      { label: "log-ingester", count: "6.7k" },
+      { label: "worker-service", count: "6.7k" },
+    ],
+  },
 ]
 
-export default function FacetFilters({ selectedLevels, setSelectedLevels }: FacetFiltersProps) {
+export default function FacetFilters({ selected, setSelected }: FacetFiltersProps) {
   const toggle = (label: string) => {
-    if (selectedLevels.includes(label)) {
-      setSelectedLevels(selectedLevels.filter((l: string) => l !== label));
+    if (selected.includes(label)) {
+      setSelected(selected.filter((l: string) => l !== label));
     } else {
-      setSelectedLevels([...selectedLevels, label]);
+      setSelected([...selected, label]);
     }
   }
 
@@ -65,9 +75,9 @@ export default function FacetFilters({ selectedLevels, setSelectedLevels }: Face
             <AccordionTrigger>{facet.title}</AccordionTrigger>
             <AccordionContent>
               <Input
-                  placeholder="Filter values"
-                  className="mb-2"
-                />
+                placeholder="Filter values"
+                className="mb-2"
+              />
               <ScrollArea className="h-[210px] pr-2">
                 {facet.values.map((val) => (
                   <div
@@ -76,7 +86,7 @@ export default function FacetFilters({ selectedLevels, setSelectedLevels }: Face
                   >
                     <Checkbox
                       id={val.label}
-                      checked={selectedLevels.includes(val.label)}
+                      checked={selected.includes(val.label)}
                       onCheckedChange={() => toggle(val.label)}
                     />
                     <label

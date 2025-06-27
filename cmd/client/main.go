@@ -29,13 +29,13 @@ func main() {
 	nano := uint64(now.UnixNano())
 
 	traceID, _ := hex.DecodeString("2123252589abcdef0123456785abcdef") // 32 hex chars
-	spanID, _ := hex.DecodeString("2124466449abcdef")                 // 16 hex chars
+	spanID, _ := hex.DecodeString("2124466449abcdef")                  // 16 hex chars
 
 	logRecord := &logspb.LogRecord{
-		TimeUnixNano:   nano,
+		TimeUnixNano:         nano,
 		ObservedTimeUnixNano: nano,
-		SeverityNumber: logspb.SeverityNumber_SEVERITY_NUMBER_FATAL,
-		SeverityText:   "CRITICAL",
+		SeverityNumber:       logspb.SeverityNumber_SEVERITY_NUMBER_ERROR,
+		SeverityText:         "ERROR",
 		Body: &commonpb.AnyValue{
 			Value: &commonpb.AnyValue_StringValue{StringValue: "K8s return a server 505 error to the request you send that not reach there to get the system call"},
 		},
@@ -43,18 +43,18 @@ func main() {
 			{Key: "env", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "dev"}}},
 			{Key: "host", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "local"}}},
 		},
-		TraceId:              traceID,  
-		SpanId:               spanID,
-		Flags:                4,
+		TraceId:                traceID,
+		SpanId:                 spanID,
+		Flags:                  4,
 		DroppedAttributesCount: 1,
-		
 	}
 
 	// Create resource and scope wrapper
 	resourceLogs := &logspb.ResourceLogs{
 		Resource: &resourcepb.Resource{
 			Attributes: []*commonpb.KeyValue{
-				{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "watchdata-service-critical"}}},
+				{Key: "source.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "java"}}},
+				{Key: "service.name", Value: &commonpb.AnyValue{Value: &commonpb.AnyValue_StringValue{StringValue: "api-gateway"}}},
 			},
 		},
 		ScopeLogs: []*logspb.ScopeLogs{

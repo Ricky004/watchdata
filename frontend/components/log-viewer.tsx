@@ -50,7 +50,7 @@ export default function LogViewer() {
   const [logs, setLogs] = useState<Log[]>([])
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
   const [selectedRange, setSelectedRange] = useState<number | null>(null)
-  const [selectedLevels, setSelectedLevels] = useState<string[]>([])
+  const [selected, setSelected] = useState<string[]>([])
   const lastSeenTimestamp = useRef<string | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
@@ -126,10 +126,25 @@ export default function LogViewer() {
     })
   }
 
-  // Filter logs based on selected levels
-  const filteredLogs = logs.filter(log =>
-    selectedLevels.length === 0 || selectedLevels.includes(log.severity_text.toUpperCase())
-  )
+  // Filter logs based on selected levels and source.name
+  const filteredLogs = logs.filter(log => {
+    const sourceName =
+      log.resource?.attributes?.find(
+        (a: { key: string; value: string }) => a.key === "source.name"
+      )?.value || "";
+    const serviceName =
+      log.resource?.attributes?.find(
+        (a: { key: string; value: string }) => a.key === "service.name"
+      )?.value || "";
+
+    const severity = log.severity_text?.toUpperCase();
+
+    const severityMatch = selected.length === 0 || selected.includes(severity);
+    const sourceMatch = selected.length === 0 || selected.includes(sourceName);
+    const serviceMatch = selected.length === 0 || selected.includes(serviceName);
+
+    return severityMatch || sourceMatch || serviceMatch
+  });
 
   return (
     <div>
@@ -189,8 +204,8 @@ export default function LogViewer() {
         {/* Sidebar (Facet Filters) */}
         <div className="bg-white dark:bg-slate-900 absolute bottom-0">
           <FacetFilters
-            selectedLevels={selectedLevels}
-            setSelectedLevels={setSelectedLevels}
+            selected={selected}
+            setSelected={setSelected}
           />
         </div>
 
