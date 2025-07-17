@@ -26,10 +26,10 @@ type Props = {
 }
 
 export default function LogChart({ logs }: Props) {
-  const chartRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (!chartRef.current || logs.length === 0) return
+    if (!chartRef.current || !Array.isArray(logs) || logs.length === 0) return
 
     const chart = echarts.init(chartRef.current)
 

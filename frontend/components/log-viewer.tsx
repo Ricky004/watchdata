@@ -2,7 +2,7 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useEffect, useState, useRef } from "react"
-import { getTop10Logs, getLogsSince, getLogsInTimeRanges } from "@/api/logs"
+import { getLogs, getLogsSince, getLogsInTimeRanges } from "@/api/logs"
 import { useLiveLogs } from "@/hooks/use-live-logs"
 import { Log } from "./types/log-type"
 import LiveToggleButton from "./live-toggle-btn"
@@ -57,7 +57,7 @@ export default function LogViewer() {
   const { logs: liveLogs } = useLiveLogs(live)
 
   useEffect(() => {
-    getTop10Logs().then((initialLogs) => {
+    getLogs().then((initialLogs) => {
       setLogs(initialLogs)
     })
   }, [])

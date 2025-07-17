@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Log } from "@/components/log-viewer";
+import { Log } from "@/components/types/log-type";
 
 export function useLiveLogs(enabled: boolean) {
   const [logs, setLogs] = useState<Log[]>([]);

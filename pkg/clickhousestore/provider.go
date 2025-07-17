@@ -136,10 +136,10 @@ func (p *ClickHouseProvider) InsertLogs(ctx context.Context, logs []telemetrytyp
 	return nil
 }
 
-func (p *ClickHouseProvider) GetTop10Logs(ctx context.Context) ([]telemetrytypes.LogRecord, error) {
+func (p *ClickHouseProvider) GetLogs(ctx context.Context) ([]telemetrytypes.LogRecord, error) {
 	var logs []telemetrytypes.LogRecord
 
-	rows, err := p.conn.Query(ctx, `SELECT * FROM logs ORDER BY timestamp DESC LIMIT 10`)
+	rows, err := p.conn.Query(ctx, `SELECT * FROM logs ORDER BY timestamp DESC LIMIT 1000`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}

@@ -37,7 +37,6 @@ func NewServer(cfg clickhousestore.Config) (*Server, error) {
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
 	}
-
 	// Start the broadcaster goroutine
 	server.startBroadcaster()
 	server.startDatabasePoller()
@@ -97,9 +96,9 @@ func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	logs, err := s.provider.GetTop10Logs(ctx)
+	logs, err := s.provider.GetLogs(ctx)
 	if err != nil {
-		log.Printf("GetTop10Logs error: %v\n", err)
+		log.Printf("GetLogs error: %v\n", err)
 		http.Error(w, "Failed to fetch logs", http.StatusInternalServerError)
 		return
 	}
