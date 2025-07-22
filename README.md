@@ -374,7 +374,7 @@ We love contributions! Here's how you can help:
 
 - **💬 Questions?** Use [GitHub Discussions](https://github.com/Ricky004/watchdata/discussions)
 - **🐛 Bug Reports:** [GitHub Issues](https://github.com/Ricky004/watchdata/issues)
-- **📧 Email:** [your-email@example.com](mailto:your-email@example.com)
+- **📧 Email:** [tridipdam001@gmail.com](mailto:tridipdam001@gmail.com)
 
 ---
 
@@ -388,6 +388,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **⭐ Star this repo if you find it useful!**
 
-Made with ❤️ by [Ricky004](https://github.com/Ricky004) and [contributors](https://github.com/Ricky004/watchdata/contributors)
+Made with ❤️ by [Tridip Dam](https://github.com/Ricky004) and [contributors](https://github.com/Ricky004/watchdata/contributors)
 
 </div>
